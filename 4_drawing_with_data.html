@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <script>
+      let width = 200;
+      let height = 100;
+      let padding = 4;
+      const datasets = [5, 10, 15, 20, 25];
+
+      // Creating a svg element
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // this will create new rect element for each element in the dataset. Enter is for creating a element if there are none on the page
+      svg
+        .selectAll("rect")
+        .data(datasets)
+        .enter() //From here create all the elements that does not exist and should exist for each dataset
+        .append("rect")
+        // We can use callback that will accept dataset and index by default. It will increment for each element created
+        .attr("x", (dataset, index) => {
+          // we can use the width of the container/number of datasets and multiply it by the index in order to space the bars evenly
+          return index * (width / datasets.length);
+        })
+        // to move the bars to the bottom of the svg
+        .attr("y", (dataset, index) => {
+          //  on y axis we use geight to start the object from bottom. then we subtract the dataset in order to move it up of its height
+          return height - dataset;
+        })
+        .attr("height", (dataset, index) => {
+          return dataset;
+        })
+        // Dynamically decide how wide the bars should be
+        .attr("width", width / datasets.length - padding)
+        .style("fill", "hotpink");
+    </script>
+  </body>
+</html>
