@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="line-chart-container"></div>
+
+    <script>
+      const chartHeight = 100;
+      const chartWidth = 400;
+      const monthlySales = [
+        { month: 10, sales: 20 },
+        { month: 20, sales: 5 },
+        { month: 30, sales: 50 },
+        { month: 40, sales: 25 },
+        { month: 50, sales: 37 },
+        { month: 60, sales: 3 },
+        { month: 70, sales: 20 },
+        { month: 80, sales: 5 },
+        { month: 90, sales: 50 },
+        { month: 100, sales: 25 },
+        { month: 110, sales: 37 },
+        { month: 120, sales: 3 },
+      ];
+
+      //   Function for drawing line
+      //   It gives back coordinated for how to draw the line i.e "M20,20L40,5L60,50L80,25L100,37L120,3L140,20L160,5L180,50L200,25L220,37L240,3"
+      const lineFunction = d3.svg
+        .line()
+        .x((data) => data.month * 2)
+        // again we want to move the chart down to the viewport. Otherwise it is upside down
+        .y((data) => chartHeight - data.sales)
+        // shape of the line
+        // .interpolate("linear")
+        .interpolate("basis");
+
+      const lineChartSVG = d3
+        .select("#line-chart-container")
+        .append("svg")
+        .attr({
+          width: chartWidth,
+          height: chartHeight,
+        });
+
+      //   Path is best used to draw something that does not have a pre defined shape i.e borders of maps and poligons
+      const viz = lineChartSVG.append("path").attr({
+        d: lineFunction(monthlySales),
+        stroke: "hotpink",
+        "stroke-width": 2,
+        fill: "none",
+      });
+
+      //   adding lavels
+      const labels = lineChartSVG
+        .selectAll("text")
+        .data(monthlySales)
+        .enter()
+        .append("text")
+        // /|\ creates text elements for each montly sale
+        .text((data) => data.sales)
+        .attr({
+          x: (data) => data.month * 2 - 8,
+          y: (data) => chartHeight - data.sales - 3,
+          "font-size": "12px",
+          "font-family": "sans-serif",
+          "text-anchor": "start",
+          dy: ".25em",
+          //   we can add attributes to points conditionally
+          "font-weight": (data, index) => {
+            if (index === 0 || index === monthlySales.length - 1) {
+              return "bold";
+            } else {
+              return "normal";
+            }
+          },
+        });
+    </script>
+  </body>
+</html>
