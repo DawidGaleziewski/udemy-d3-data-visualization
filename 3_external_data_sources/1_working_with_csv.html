@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="container"></div>
+    <div id="table-container"></div>
+    <script>
+      const h = 100;
+      const w = 800;
+      let dataset = [];
+      //   d3 has a method for handling csv files
+      //  it is handled async
+      //   let salesTotal = 0.0;
+
+      const buildLine = () => {
+        const lineFunction = d3.svg
+          .line()
+          .x((data) => (data.month - 201300001) / 3)
+          .y((data) => h - data.sales)
+          .interpolate("linear");
+
+        const svg = d3.select("#container").append("svg").attr({
+          width: w,
+          height: h,
+        });
+
+        var viz = svg.append("path").attr({
+          d: lineFunction(dataset),
+          stroke: "purple",
+          "stroke-width": 2,
+          fill: "none",
+        });
+      };
+      const showTotals = () => {
+        const text = d3.select("#table-container").append("table");
+        const total = dataset.reduce((acc, val) => acc + Number(val.sales), 0);
+        const tableRow = text
+          .selectAll("tr")
+          .data([1])
+          .enter()
+          .append("tr")
+          .append("td")
+          .text("Sales Total " + total);
+      };
+      d3.csv("./monthlySales.csv", (error, data) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log(data);
+          dataset = data;
+          buildLine();
+          showTotals();
+        }
+      });
+    </script>
+  </body>
+</html>
