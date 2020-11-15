@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="line-chart-container"></div>
+
+    <script>
+      const chartHeight = 100;
+      const chartWidth = 400;
+      const monthlySales = [
+        { month: 10, sales: 20 },
+        { month: 20, sales: 5 },
+        { month: 30, sales: 50 },
+        { month: 40, sales: 25 },
+        { month: 50, sales: 37 },
+        { month: 60, sales: 3 },
+        { month: 70, sales: 20 },
+        { month: 80, sales: 5 },
+        { month: 90, sales: 50 },
+        { month: 100, sales: 25 },
+        { month: 110, sales: 37 },
+        { month: 120, sales: 3 },
+      ];
+
+      // We want to create scales for x and y axis
+      const xScale = d3.scale
+        .linear()
+        // Using build in d3 methods we find min and max values from the array of object to dynamically set up the domain
+        .domain([
+          d3.min(monthlySales, (data) => data.month),
+          d3.max(monthlySales, (data) => data.month),
+        ])
+        // Range will be the width of our svg as this is a linear function. Therefore we will go from 0 to width of the svg
+        .range([0, chartWidth]);
+
+      const yScale = d3.scale
+        .linear()
+        .domain([
+          //   d3.min(monthlySales, (data) => data.sales),
+          // ! important we always want to run things like sale starting from 0 scale this is data visualisation principle. 0 should be a basline so everything is representative
+          0,
+          d3.max(monthlySales, (data) => data.sales),
+        ])
+        // we have height and then 0 as cordinate system is reversed
+        .range([chartHeight, 0]);
+
+      console.log(xScale(20));
+
+      const lineFunction = d3.svg
+        .line()
+        .x((data) => xScale(data.month))
+        .y((data) => yScale(data.sales))
+        .interpolate("basis");
+
+      const lineChartSVG = d3
+        .select("#line-chart-container")
+        .append("svg")
+        .attr({
+          width: chartWidth,
+          height: chartHeight,
+        });
+
+      const viz = lineChartSVG.append("path").attr({
+        d: lineFunction(monthlySales),
+        stroke: "hotpink",
+        "stroke-width": 2,
+        fill: "none",
+      });
+
+      //   adding lavels
+      const labels = lineChartSVG
+        .selectAll("text")
+        .data(monthlySales)
+        .enter()
+        .append("text")
+        // /|\ creates text elements for each montly sale
+        .text((data) => data.sales)
+        .attr({
+          x: (data) => xScale(data.month),
+          y: (data) => yScale(data.sales) + 7,
+          "font-size": "12px",
+          "font-family": "sans-serif",
+          "text-anchor": "start",
+          dy: ".25em",
+          //   we can add attributes to points conditionally
+          "font-weight": (data, index) => {
+            if (index === 0 || index === monthlySales.length - 1) {
+              return "bold";
+            } else {
+              return "normal";
+            }
+          },
+        });
+    </script>
+  </body>
+</html>

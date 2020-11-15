@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="d3-container"></div>
+
+    <script>
+      const apiUrl =
+        "https://api.github.com/repos/bsullins/d3js-resources/contents/monthlySalesbyCategoryMultiple.json";
+
+      const DOMd3Container = document.querySelector("#d3-container");
+
+      const chartHeight = 800;
+      const chartWidth = 800;
+
+      // Spits up a function that will create a line coordinates
+      const lineFunction = d3.svg
+        .line()
+        .x((data) => (data.month - 201300001) / 3)
+        .y((data) => chartHeight - data.sales)
+        .interpolate("linear");
+
+      const chartSVG = d3.select(DOMd3Container).append("svg").attr({
+        width: chartWidth,
+        height: chartHeight,
+      });
+
+      const drawLineOnChart = (chart, data) => {
+        chart.append("path").attr({
+          d: lineFunction(data),
+          stroke: "red",
+          "stroke-width": 2,
+          fill: "none",
+        });
+      };
+
+      d3.json(apiUrl, (error, data) => {
+        if (error) {
+          console.log(error);
+        } else {
+          // we want to decode our data from base 65
+          const decodedData = JSON.parse(window.atob(data.content));
+
+          decodedData.contents.forEach((data) => {
+            console.log("data", data.monthlySales);
+            drawLineOnChart(chartSVG, data.monthlySales);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

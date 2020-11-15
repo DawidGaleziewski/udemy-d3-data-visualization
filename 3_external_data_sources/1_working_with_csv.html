@@ -20,7 +20,7 @@
       const buildLine = () => {
         const lineFunction = d3.svg
           .line()
-          .x((data) => (data.month - 201300001) / 3)
+          .x((data) => (data.month - 20130001) / 3)
           .y((data) => h - data.sales)
           .interpolate("linear");
 

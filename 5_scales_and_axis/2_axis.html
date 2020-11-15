@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="line-chart-container"></div>
+
+    <style>
+      #line-chart-container {
+        display: block;
+        margin: 80px auto 0 auto;
+        max-width: 500px;
+      }
+
+      /* we can style axis in css */
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+
+      .axis text {
+        font-family: sans-serif;
+        font-size: 10px;
+      }
+    </style>
+
+    <script>
+      const chartHeight = 300;
+      const chartWidth = 400;
+      const padding = 30;
+
+      const monthlySales = [
+        { month: "01.01.2020", sales: 20 },
+        { month: "02.01.2020", sales: 5 },
+        { month: "03.01.2020", sales: 50 },
+        { month: "04.01.2020", sales: 25 },
+        { month: "05.01.2020", sales: 37 },
+        { month: "06.01.2020", sales: 3 },
+        { month: "07.01.2020", sales: 20 },
+        { month: "08.01.2020", sales: 5 },
+        { month: "09.01.2020", sales: 50 },
+        { month: "10.01.2020", sales: 25 },
+        { month: "11.01.2020", sales: 37 },
+        { month: "12.01.2020", sales: 3 },
+      ];
+
+      // converting to month names
+      const getDate = (data) => {
+        const strDate = new String(data);
+        const year = strDate.substr(6, 4);
+        const month = strDate.substr(0, 2) - 1;
+        const day = strDate.substr(4, 2);
+        console.log(new Date(year, month, day));
+        return new Date(year, month, day);
+      };
+
+      const minDate = getDate(monthlySales[0]["month"]);
+      const maxDate = getDate(monthlySales[monthlySales.length - 1]["month"]);
+      // We have a method for time scales
+      const xScale = d3.time
+        .scale()
+        .domain([minDate, maxDate])
+        // we need to adjust the placment of the axis with our padding so we can see it
+        .range([padding, chartWidth - padding]);
+
+      const yScale = d3.scale
+        .linear()
+        .domain([0, d3.max(monthlySales, (data) => data.sales)])
+        .range([chartHeight - padding, padding]);
+
+      const lineFunction = d3.svg
+        .line()
+        .x((data) => xScale(getDate(data.month)))
+        .y((data) => yScale(data.sales))
+        .interpolate("basis");
+
+      const lineChartSVG = d3
+        .select("#line-chart-container")
+        .append("svg")
+        .attr({
+          width: chartWidth,
+          height: chartHeight,
+        });
+
+      // AXIS
+      const yAxisGen = d3.svg
+        .axis()
+        .scale(yScale)
+        .orient("left")
+        // Ticks allow us to adjust how many ticks on the axis we want to see
+        .ticks(3);
+
+      const xAxisGen = d3.svg
+        .axis()
+        .scale(xScale)
+        .orient("bottom")
+        .tickFormat(d3.time.format("%b"));
+
+      // g is a group tag that groups elements together into svg element. It is usefull for a axis as it creates a lot of elements.
+      // We execute it and add the element using call() method
+      const yAxis = lineChartSVG
+        .append("g")
+        .call(yAxisGen)
+        .attr("class", "axis")
+        .attr("transform", `translate(${padding}, 0)`);
+
+      const xAxis = lineChartSVG
+        .append("g")
+        .call(xAxisGen)
+        .attr("class", "axis")
+        .attr("transform", `translate(0, ${chartHeight - padding})`);
+
+      const viz = lineChartSVG.append("path").attr({
+        d: lineFunction(monthlySales),
+        stroke: "hotpink",
+        "stroke-width": 2,
+        fill: "none",
+      });
+    </script>
+  </body>
+</html>
