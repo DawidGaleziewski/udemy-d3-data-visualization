@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <p>Choose date range</p>
+    <select id="date-option">
+      <option value="12">Last Year</option>
+      <option value="6">Last half a year</option>
+      <option value="3">Last Quarter</option>
+    </select>
+    <div id="line-chart-container"></div>
+
+    <style>
+      #line-chart-container {
+        display: block;
+        margin: 80px auto 0 auto;
+        max-width: 500px;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+
+      .axis text {
+        font-family: sans-serif;
+        font-size: 10px;
+      }
+    </style>
+
+    <script>
+      const chartHeight = 300;
+      const chartWidth = 400;
+      const padding = 30;
+
+      const monthlySales = [
+        { month: "01.01.2020", sales: 20 },
+        { month: "02.01.2020", sales: 5 },
+        { month: "03.01.2020", sales: 50 },
+        { month: "04.01.2020", sales: 25 },
+        { month: "05.01.2020", sales: 37 },
+        { month: "06.01.2020", sales: 3 },
+        { month: "07.01.2020", sales: 20 },
+        { month: "08.01.2020", sales: 5 },
+        { month: "09.01.2020", sales: 50 },
+        { month: "10.01.2020", sales: 25 },
+        { month: "11.01.2020", sales: 37 },
+        { month: "12.01.2020", sales: 3 },
+      ];
+
+      const getDate = (data) => {
+        const strDate = new String(data);
+        const year = strDate.substr(6, 4);
+        const month = strDate.substr(0, 2) - 1;
+        const day = strDate.substr(4, 2);
+        console.log(new Date(year, month, day));
+        return new Date(year, month, day);
+      };
+
+      const buildLine = (monthlySales) => {
+        const minDate = getDate(monthlySales[0]["month"]);
+        const maxDate = getDate(monthlySales[monthlySales.length - 1]["month"]);
+        const xScale = d3.time
+          .scale()
+          .domain([minDate, maxDate])
+          .range([padding, chartWidth - padding]);
+
+        const yScale = d3.scale
+          .linear()
+          .domain([0, d3.max(monthlySales, (data) => data.sales)])
+          .range([chartHeight - padding, padding]);
+
+        const lineFunction = d3.svg
+          .line()
+          .x((data) => xScale(getDate(data.month)))
+          .y((data) => yScale(data.sales))
+          .interpolate("basis");
+
+        const lineChartSVG = d3
+          .select("#line-chart-container")
+          .append("svg")
+          .attr({
+            width: chartWidth,
+            height: chartHeight,
+            id: "svg-id",
+          });
+
+        const yAxisGen = d3.svg.axis().scale(yScale).orient("left").ticks(3);
+
+        const xAxisGen = d3.svg
+          .axis()
+          .scale(xScale)
+          .orient("bottom")
+          .tickFormat(d3.time.format("%b"));
+        const yAxis = lineChartSVG
+          .append("g")
+          .call(yAxisGen)
+          .attr("class", "y-axis axis")
+          .attr("transform", `translate(${padding}, 0)`);
+
+        const xAxis = lineChartSVG
+          .append("g")
+          .call(xAxisGen)
+          .attr("class", "x-axis axis")
+          .attr("transform", `translate(0, ${chartHeight - padding})`);
+
+        const viz = lineChartSVG.append("path").attr({
+          d: lineFunction(monthlySales),
+          stroke: "hotpink",
+          "stroke-width": 2,
+          fill: "none",
+          class: "path-id",
+        });
+      };
+
+      buildLine(monthlySales);
+      const updateLine = (monthlySales) => {
+        const minDate = getDate(monthlySales[0]["month"]);
+        const maxDate = getDate(monthlySales[monthlySales.length - 1]["month"]);
+        const xScale = d3.time
+          .scale()
+          .domain([minDate, maxDate])
+          .range([padding, chartWidth - padding]);
+
+        const yScale = d3.scale
+          .linear()
+          .domain([0, d3.max(monthlySales, (data) => data.sales)])
+          .range([chartHeight - padding, padding]);
+
+        const lineFunction = d3.svg
+          .line()
+          .x((data) => xScale(getDate(data.month)))
+          .y((data) => yScale(data.sales))
+          .interpolate("basis");
+
+        const lineChartSVG = d3
+          .select("#line-chart-container")
+          .select("#svg-id");
+
+        const yAxisGen = d3.svg.axis().scale(yScale).orient("left").ticks(3);
+
+        const xAxisGen = d3.svg
+          .axis()
+          .scale(xScale)
+          .orient("bottom")
+          .tickFormat(d3.time.format("%b"));
+
+        const yAxis = lineChartSVG.selectAll("g.y-axis").call(yAxisGen);
+
+        const xAxis = lineChartSVG.selectAll("g.x-axis").call(xAxisGen);
+        // Att last we want to update our line function
+        const viz = lineChartSVG
+          .selectAll("path.path-id")
+          // we can add animation by transition method
+          .transition()
+          .duration(2000)
+          // type of transition
+          // .ease("linear")
+          // .ease("circle")
+          // .ease("elastic")
+          .ease("bounce")
+          .attr({
+            d: lineFunction(monthlySales),
+          });
+      };
+
+      // Now we can update data on listener
+      d3.select("#date-option").on("change", (data, index) => {
+        const selected = d3.select("#date-option").node().value;
+
+        const subArray = monthlySales.slice(0, Number(selected));
+        console.log(subArray);
+        updateLine(subArray);
+      });
+    </script>
+  </body>
+</html>

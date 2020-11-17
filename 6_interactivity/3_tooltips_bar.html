@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="bar-chart-container"></div>
+    <div id="bar-chart-container-json"></div>
+
+    <script>
+      let chartWidth = 300;
+      let chartHeight = 100;
+      let chartBarGutter = 2;
+      const dataset = [5, 10, 14, 20, 25, 7, 1, 2, 30];
+      const barChartSVG = d3
+        .select("#bar-chart-container")
+        .append("svg")
+        .attr("width", chartWidth)
+        .attr("height", chartHeight);
+
+      barChartSVG
+        .selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("rect")
+        .attr("x", (data, index) => {
+          return (chartWidth / dataset.length) * index;
+        })
+        .attr("y", (data) => {
+          return chartHeight - data;
+        })
+        .attr("width", chartWidth / dataset.length - chartBarGutter)
+        .attr("height", (data) => data)
+        // Color bars using data values
+        .attr("fill", (data) => {
+          return `rgb(${data * 10}, 0, ${data * 10})`;
+        });
+
+      // Using json to configure chart
+      const colorPicker = (value) => (value < 20 ? "#666" : "#ff0033");
+
+      const barChartSVGJSON = d3
+        .select("#bar-chart-container-json")
+        .append("svg")
+        .attr("width", chartWidth)
+        .attr("height", chartHeight);
+
+      barChartSVGJSON
+        .selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("rect")
+        // Important this syntax does not work in d3v 4+
+        .attr({
+          x: function (data, index) {
+            return (chartWidth / dataset.length) * index;
+          },
+
+          y: (data) => chartHeight - data,
+          width: chartWidth / dataset.length - chartBarGutter,
+          height: (data) => data,
+          fill: (data) => colorPicker(data),
+        });
+      // SIMPLE - more restrictive! We can add tooltip that is native to a browser
+      // .append("title")
+      // .text((data) => data);
+    </script>
+  </body>
+</html>
