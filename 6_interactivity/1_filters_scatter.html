@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.0/d3.min.js"></script>
+  </head>
+  <body>
+    <p>
+      Show labels
+      <select id="label-options">
+        <option value="all">All</option>
+        <option value="minmax">Min/Max</option>
+        <option value="none">None</option>
+      </select>
+    </p>
+    <div id="scatter-plot-container"></div>
+
+    <script>
+      const chartHeight = 200;
+      const chartWidth = 400;
+      const monthlySales = [
+        { month: 10, sales: 20 },
+        { month: 20, sales: 5 },
+        { month: 30, sales: 50 },
+        { month: 40, sales: 25 },
+        { month: 50, sales: 37 },
+        { month: 60, sales: 3 },
+        { month: 70, sales: 20 },
+        { month: 80, sales: 5 },
+        { month: 90, sales: 50 },
+        { month: 100, sales: 25 },
+        { month: 110, sales: 37 },
+        { month: 120, sales: 3 },
+      ];
+
+      const scatterPlotSVG = d3
+        .select("#scatter-plot-container")
+        .append("svg")
+        .attr({
+          width: chartWidth,
+          height: chartHeight,
+        });
+      const salesKPI = (data) => {
+        if (data > 25) {
+          return "hotpink";
+        } else {
+          return "#666";
+        }
+      };
+
+      const showMinMax = (dataset, column, val, type) => {
+        const max = d3.max(dataset, (data) => data[column]);
+        const min = d3.min(dataset, (data) => data[column]);
+
+        if ((type === "minmax" && val == max) || val == min) {
+          return val;
+        } else {
+          if (type === "all") {
+            return val;
+          }
+        }
+      };
+
+      // add dots
+      const dots = scatterPlotSVG
+        .selectAll("cicle")
+        .data(monthlySales)
+        .enter()
+        .append("circle")
+        .attr({
+          cx: (data) => data.month,
+          cy: (data) => chartHeight - data.sales,
+          r: 3,
+          fill: (data) => salesKPI(data.sales),
+        });
+
+      scatterPlotSVG
+        .selectAll("text")
+        .data(monthlySales)
+        .enter()
+        .append("text")
+        .text((data) => showMinMax(monthlySales, "sales", data.sales, "minmax"))
+        .attr({
+          x: (data) => data.month - 25,
+          y: (data) => chartHeight - data.sales,
+          "font-size": "12px",
+          "font-family": "sans-serif",
+          "text-anchor": "start",
+        });
+
+      // d3 has its own way of adding event listeners
+      d3.select("#label-options").on("change", (data) => {
+        // storing value of a option
+        const selected = d3.select("#label-options").node().value;
+
+        // Now we want to change the existing values of a svg
+        scatterPlotSVG
+          .selectAll("text")
+          .data(monthlySales)
+          .text((data) =>
+            showMinMax(monthlySales, "sales", data.sales, selected)
+          );
+      });
+    </script>
+  </body>
+</html>
